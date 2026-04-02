@@ -68,6 +68,27 @@ export type ServicesResponse = {
   margin?: { labor?: number; oil?: number; tires?: number };
 };
 
+export type QboInvoice = {
+  id: string;
+  customerName: string;
+  amount: number;
+  dueDate: string;
+  status: 'paid' | 'open' | 'overdue';
+};
+
+export type QboResponse = {
+  connected: boolean;
+  companyName?: string;
+  revenueThisMonth?: number;
+  revenueLastMonth?: number;
+  accountsReceivable?: number;
+  openInvoiceCount?: number;
+  overdueInvoiceCount?: number;
+  recentInvoices?: QboInvoice[];
+  lastSyncedAt?: string;
+  error?: string;
+};
+
 async function safeFetch<T>(path: string): Promise<T | null> {
   try {
     const res = await fetch(`${API_BASE}${path}`);
@@ -89,6 +110,9 @@ export const fetchTank = (siteId: string) =>
 
 export const fetchServices = (siteId: string) =>
   safeFetch<ServicesResponse>(`/api/site/${siteId}/services`);
+
+export const fetchQbo = (siteId: string) =>
+  safeFetch<QboResponse>(`/api/site/${siteId}/qbo`);
 
 export const setStrategy = async (siteId: string, strategy: 'Match' | 'Premium' | 'Undercut') => {
   try {
