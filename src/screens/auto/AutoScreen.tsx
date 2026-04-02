@@ -1,7 +1,9 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { fetchAnalysis, fetchServices } from '../../api';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
+import { fetchAnalysis, fetchServices, fetchQbo } from '../../api';
+import type { QboResponse } from '../../api';
 import { MarketAnalysis } from '../../components/MarketAnalysis';
+import { QboPanel } from '../../components/QboPanel';
 import { useAutoRefresh } from '../../hooks/useAutoRefresh';
 
 const SITE_ID = 'auto-2727';
@@ -11,11 +13,15 @@ export const AutoScreen = () => {
   const [analysis, setAnalysis] = useState<any>(null);
   const [analysisText, setAnalysisText] = useState('Loading market analysis...');
   const [services, setServices] = useState<any>(null);
+  const [qbo, setQbo] = useState<QboResponse | null>(null);
 
   const load = useCallback(async () => {
-    setLoading(true);
-    const analysisRes = await fetchAnalysis(SITE_ID);
-    const svc = await fetchServices(SITE_ID);
+    if (!analysis && !services && !qbo) setLoading(true);
+    const [analysisRes, svc, qboRes] = await Promise.all([
+      fetchAnalysis(SITE_ID),
+      fetchServices(SITE_ID),
+      fetchQbo(SITE_ID),
+    ]);
     if (analysisRes) {
       setAnalysis(analysisRes);
       setAnalysisText(`${analysisRes.strategy}: ${analysisRes.recommendation}`);
@@ -24,6 +30,7 @@ export const AutoScreen = () => {
       setAnalysisText('Market analysis unavailable (mock API not reachable).');
     }
     setServices(svc);
+    setQbo(qboRes);
     setLoading(false);
   }, []);
 
@@ -43,23 +50,27 @@ export const AutoScreen = () => {
       {getLastUpdatedText() && (
         <Text style={styles.lastUpdatedText}>{getLastUpdatedText()}</Text>
       )}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Service pricing</Text>
-        <Text style={styles.text}>Labor/hr: ${services?.laborPerHour ?? '--'}</Text>
-        <Text style={styles.text}>Oil change: ${services?.oilChange ?? '--'}</Text>
-        <Text style={styles.text}>Tires set: ${services?.tires ?? '--'}</Text>
-        {services?.rating ? <Text style={styles.text}>Rating: {services.rating}</Text> : null}
-      </View>
-      <MarketAnalysis
-        siteId={SITE_ID}
-        strategy={analysis?.strategy}
-        color={analysis?.color}
-        recommendation={analysis?.recommendation ?? analysisText}
-        competitors={analysis?.competitors}
-        stats={analysis?.stats}
-        accentColor="#3b82f6"
-        onStrategyChange={() => load()}
-      />
+      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Service pricing</Text>
+          <Text style={styles.text}>Labor/hr: ${services?.laborPerHour ?? '--'}</Text>
+          <Text style={styles.text}>Oil change: ${services?.oilChange ?? '--'}</Text>
+          <Text style={styles.text}>Tires set: ${services?.tires ?? '--'}</Text>
+          {services?.rating ? <Text style={styles.text}>Rating: {services.rating}</Text> : null}
+        </View>
+        <QboPanel qbo={qbo} />
+        <MarketAnalysis
+          siteId={SITE_ID}
+          strategy={analysis?.strategy}
+          color={analysis?.color}
+          recommendation={analysis?.recommendation ?? analysisText}
+          competitors={analysis?.competitors}
+          stats={analysis?.stats}
+          accentColor="#3b82f6"
+          onStrategyChange={() => load()}
+        />
+        <View style={{ height: 24 }} />
+      </ScrollView>
     </View>
   );
 };
@@ -69,6 +80,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#1a1a2e',
     padding: 20,
+  },
+  scroll: {
+    flex: 1,
   },
   title: {
     fontSize: 28,

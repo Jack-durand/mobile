@@ -17,7 +17,7 @@ const HomeScreen = () => (
 );
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<TabName>('home');
+  const [activeTab, setActiveTab] = useState<TabName>('auto');
 
   const renderScreen = () => {
     switch (activeTab) {
