@@ -16,7 +16,7 @@ export const AutoScreen = () => {
   const [qbo, setQbo] = useState<QboResponse | null>(null);
 
   const load = useCallback(async () => {
-    setLoading(true);
+    if (!analysis && !services && !qbo) setLoading(true);
     const [analysisRes, svc, qboRes] = await Promise.all([
       fetchAnalysis(SITE_ID),
       fetchServices(SITE_ID),

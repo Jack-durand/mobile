@@ -48,32 +48,36 @@ export const QboPanel: React.FC<Props> = ({ qbo }) => {
         <Text style={styles.companyName}>{qbo.companyName}</Text>
       )}
 
-      <View style={styles.statsRow}>
-        {qbo.revenueThisMonth !== undefined && (
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{fmt(qbo.revenueThisMonth)}</Text>
-            <Text style={styles.statLabel}>This Month</Text>
-          </View>
-        )}
-        {qbo.revenueLastMonth !== undefined && (
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{fmt(qbo.revenueLastMonth)}</Text>
-            <Text style={styles.statLabel}>Last Month</Text>
-          </View>
-        )}
-        {qbo.accountsReceivable !== undefined && (
-          <View style={styles.statItem}>
-            <Text style={[styles.statValue, qbo.accountsReceivable > 0 && styles.arValue]}>
-              {fmt(qbo.accountsReceivable)}
-            </Text>
-            <Text style={styles.statLabel}>AR Outstanding</Text>
-          </View>
-        )}
-      </View>
+      {(qbo.revenueThisMonth !== undefined ||
+        qbo.revenueLastMonth !== undefined ||
+        qbo.accountsReceivable !== undefined) && (
+        <View style={styles.statsRow}>
+          {qbo.revenueThisMonth !== undefined && (
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{fmt(qbo.revenueThisMonth)}</Text>
+              <Text style={styles.statLabel}>This Month</Text>
+            </View>
+          )}
+          {qbo.revenueLastMonth !== undefined && (
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{fmt(qbo.revenueLastMonth)}</Text>
+              <Text style={styles.statLabel}>Last Month</Text>
+            </View>
+          )}
+          {qbo.accountsReceivable !== undefined && (
+            <View style={styles.statItem}>
+              <Text style={[styles.statValue, qbo.accountsReceivable > 0 && styles.arValue]}>
+                {fmt(qbo.accountsReceivable)}
+              </Text>
+              <Text style={styles.statLabel}>AR Outstanding</Text>
+            </View>
+          )}
+        </View>
+      )}
 
       {(qbo.openInvoiceCount !== undefined || qbo.overdueInvoiceCount !== undefined) && (
         <View style={styles.invoiceSummary}>
-          {qbo.openInvoiceCount !== undefined && (
+          {qbo.openInvoiceCount !== undefined && qbo.openInvoiceCount > 0 && (
             <Text style={styles.invoiceChip}>
               {qbo.openInvoiceCount} open
             </Text>
